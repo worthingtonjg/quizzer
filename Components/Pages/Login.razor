@@ -1,0 +1,28 @@
+﻿@page "/login"
+@inject NavigationManager Nav
+
+@code {
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? ReturnUrl { get; set; }
+
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public string? Error { get; set; }
+
+    private string errorMessage => Error == "invalid" ? "Invalid email or password." : "";
+}
+
+<h3>Login</h3>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <p style="color:red">@errorMessage</p>
+}
+
+<form method="post" action="/auth/login?returnUrl=@Uri.EscapeDataString(ReturnUrl ?? "/")"
+      style="display:flex; flex-direction:column; width:250px;">
+    <input name="Email" placeholder="Email" required />
+    <input name="Password" type="password" placeholder="Password" required />
+    <button type="submit">Login</button>
+</form>

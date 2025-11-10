@@ -1,6 +1,33 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using quizzer.Components.Layout
+
+<Router AppAssembly="@typeof(App).Assembly">
     <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        @if (routeData.PageType.GetCustomAttributes(typeof(Microsoft.AspNetCore.Authorization.AuthorizeAttribute), inherit: true).Any())
+        {
+            <!-- 🔒 Only wrap [Authorize] pages -->
+            <AuthorizeRouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)">
+                <NotAuthorized>
+                    <!-- 🧱 Use the minimal login layout so we don't nest the full app -->
+                    <LayoutView Layout="@typeof(LoginLayout)">
+                        <p>You are not authorized to view this page.</p>
+                        <p><a href="/login">Go to login</a></p>
+                    </LayoutView>
+                </NotAuthorized>
+            </AuthorizeRouteView>
+        }
+        else
+        {
+            <!-- 🟢 Public pages like /login -->
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(LoginLayout)" />
+        }
+
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
     </Found>
+
+    <NotFound>
+        <LayoutView Layout="@typeof(LoginLayout)">
+            <p>Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
 </Router>

@@ -1,0 +1,18 @@
+﻿@page "/logout"
+@inject NavigationManager Nav
+
+<h3>Logging out...</h3>
+
+@code {
+    private bool _redirected = false;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_redirected)
+        {
+            _redirected = true;
+            // Perform a full-page reload so ASP.NET Core can clear the cookie
+            Nav.NavigateTo("/auth/logout?returnUrl=/login", forceLoad: true);
+        }
+    }
+}
