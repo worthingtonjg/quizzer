@@ -1,0 +1,101 @@
+﻿@page "/teacher/dashboard"
+@inherits quizzer.Pages.Teacher.Dashboard;
+
+<PageTitle>Teacher Dashboard</PageTitle>
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">My Dashboard</h2>
+            @if (!string.IsNullOrEmpty(TeacherEmail))
+            {
+                <p class="text-muted mb-0">Welcome, @TeacherEmail</p>
+            }
+        </div>
+        <button class="btn btn-primary" @onclick="CreateNewTest">
+            <i class="bi bi-plus-lg"></i> Create New Test
+        </button>
+    </div>
+
+    @if (IsLoading)
+    {
+        <div class="text-center mt-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <ul class="nav nav-tabs mb-3" id="testTabs" role="tablist">
+            @foreach (var category in Categories)
+            {
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link @(SelectedCategory == category ? "active" : "")"
+                            type="button"
+                            @onclick="() => SelectCategory(category)">
+                        @category
+                    </button>
+                </li>
+            }
+        </ul>
+
+        @if (FilteredTests.Count == 0)
+        {
+            <div class="alert alert-info text-center">
+                No @SelectedCategory.ToLower() tests found.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Status</th>
+                            <th>Title</th>
+                            <th>Questions</th>
+                            <th>Points</th>
+                            <th>Last Updated</th>
+                            <th style="width:150px;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var test in FilteredTests)
+                        {
+                            <tr>
+                                <td>
+                                    @if (!test.IsPublished)
+                                    {
+                                        <span class="badge bg-warning">Draft</span>
+                                    }
+                                    else
+                                    {
+                                        @if (test.IsOpen)
+                                        {
+                                            <span class="badge bg-success">Open</span>
+                                        }
+                                        else 
+                                        {
+                                            <span class="badge bg-dark">Closed</span>
+                                        }
+                                    }
+                                </td>
+                                <td>@test.Title</td>
+                                <td>@test.QuestionCount</td>
+                                <td>@test.TotalPoints</td>
+                                <td>@test.LastModifiedDate.ToLocalTime().ToString("MMM d, yyyy")</td>
+                                <td>
+                                    <button class="btn btn-primary btn-sm w-100"
+                                            @onclick="() => ManageTest(test.RowKey)">
+                                        Manage
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    }
+</div>

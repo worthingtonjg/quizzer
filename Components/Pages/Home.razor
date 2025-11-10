@@ -1,9 +1,76 @@
 ﻿@page "/"
-@attribute [Authorize]
-@using Microsoft.AspNetCore.Authorization
+@inherits quizzer.Pages.Home
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Quizzer</PageTitle>
 
-<h1>Hello, world!</h1>
+@if (IsLoading)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <h1 class="fw-bold mb-3">Welcome to Quizzer</h1>
+        <p class="lead text-muted">
+            A simple, secure way for teachers to create open-ended quizzes and for students to take them using access codes.
+        </p>
+    </div>
 
-Welcome to your new app.
+    <div class="row justify-content-center">
+        <!-- Teacher Section -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 mb-3">👩‍🏫</div>
+                    <h4 class="card-title mb-3">For Teachers</h4>
+                    <p class="text-muted mb-4">
+                        Login to manage your quizzes, create questions, and review student submissions.
+                    </p>
+
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-primary" @onclick="GoToLogin">Login</button>
+                        <button class="btn btn-outline-secondary" @onclick="GoToRegister">Register</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Student Section -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body text-center">
+                    <div class="display-6 mb-3">🧑‍🎓</div>
+                    <h4 class="card-title mb-3">For Students</h4>
+                    <p class="text-muted mb-4">
+                        Enter your access code below to start your test.
+                    </p>
+
+                    <div class="input-group mb-3">
+                        <input @bind="AccessCode"
+                               @bind:event="oninput"
+                               type="text"
+                               class="form-control text-uppercase"
+                               placeholder="Enter Access Code"
+                               maxlength="8" />
+                        <button class="btn btn-success" @onclick="StartTest">Start</button>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(ErrorMessage))
+                    {
+                        <div class="text-danger small">@ErrorMessage</div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center text-muted mt-5">
+        <small>Quizzer © @DateTime.Now.Year — Privacy-friendly and teacher-built.</small>
+    </footer>
+</div>
+}

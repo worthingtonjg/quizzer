@@ -1,0 +1,96 @@
+﻿@page "/teacher/tests/accesscodes"
+@inherits quizzer.Pages.Teacher.AccessCodesSection
+
+<div class="card shadow-sm border-0">
+    <div class="card-body">
+        @if (IsLoading)
+        {
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="d-flex align-items-end mb-3 gap-2">
+                <div>
+                    <input type="number" min="1" class="form-control" style="width:100px"
+                           @bind="GenerateCount" />
+                </div>
+                <button class="btn btn-success" @onclick="GenerateCodes" disabled="@IsGenerating">
+                    @if (IsGenerating)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2"></span>
+                        <span>Generating...</span>
+                    }
+                    else
+                    {
+                        <i class="bi bi-plus-lg"></i> <span>Generate</span>
+                    }
+                </button>
+            </div>
+
+            @if (Codes.Count == 0)
+            {
+                <div class="alert alert-light text-center">No access codes yet.</div>
+            }
+            else
+            {
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <div class="small text-muted">
+                        Showing @Codes.Count access codes
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" @onclick="CopyAllLinks">
+                        <i class="bi bi-clipboard-check"></i> Copy All Links
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle table-striped">
+                        <thead class="table-light">
+                            <tr>
+                                <th style="width:40px;">#</th>
+                                <th>Access Code</th>
+                                <th>Link</th>
+                                <th style="width:120px;">Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var (c, i) in Codes.Select((c, idx) => (c, idx + 1)))
+                            {
+                                <tr>
+                                    <td>@i</td>
+                                    <td><code>@c.RowKey</code></td>
+                                    <td>
+                                        <a href="@BuildLink(c)" target="_blank" class="text-truncate" style="max-width: 250px;">
+                                            <small>@BuildLink(c)</small>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        @if (c.Used)
+                                        {
+                                            <span class="badge bg-secondary">Used</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-success">Active</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-outline-secondary btn-sm ms-2" @onclick="() => CopyLink(BuildLink(c))"
+                                                title="Copy link">
+                                            <i class="bi bi-clipboard"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+
+        }
+    </div>
+</div>

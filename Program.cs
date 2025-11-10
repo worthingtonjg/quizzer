@@ -10,6 +10,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
+builder.Services.AddSingleton<AccessCodeService>();
+builder.Services.AddScoped<CurrentUserService>();
+builder.Services.AddSingleton<QuestionService>();
+builder.Services.AddSingleton<SubmissionService>();
+builder.Services.AddSingleton<TestService>();
 builder.Services.AddSingleton<UserService>();
 
 // Add cookie-based authentication
@@ -55,29 +60,6 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-// TEMPORARY: Create first teacher account
-using (var scope = app.Services.CreateScope())
-{
-    var userService = scope.ServiceProvider.GetRequiredService<UserService>();
-
-    // Replace these with your desired login credentials
-    string seedEmail = "teacher@example.com";
-    string seedPassword = "Pass123!";
-
-    var existing = await userService.GetByEmailAsync(seedEmail);
-    if (existing == null)
-    {
-        bool success = await userService.RegisterAsync(seedEmail, seedPassword);
-        if (success)
-            Console.WriteLine($"✅ Seeded teacher user: {seedEmail} / {seedPassword}");
-        else
-            Console.WriteLine($"⚠️ Could not seed user (already exists?)");
-    }
-    else
-    {
-        Console.WriteLine($"ℹ️ User '{seedEmail}' already exists — skipping seed.");
-    }
-}
-
+await DataSeeder.SeedAsync(app.Services);
 
 app.Run();
