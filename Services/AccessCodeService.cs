@@ -1,8 +1,5 @@
 ﻿using Azure.Data.Tables;
-using quizzer.Components.Pages;
 using quizzer.Models;
-using System.CodeDom.Compiler;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace quizzer.Services
 {
@@ -20,6 +17,24 @@ namespace quizzer.Services
             var serviceClient = new TableServiceClient(connStr);
             _table = serviceClient.GetTableClient("AccessCodes");
             _table.CreateIfNotExists();
+        }
+
+        public async Task<AccessCodeEntity?> GetByIdAsync(string accessCodeId)
+        {
+            try
+            {
+                // We don't know the partition yet, so query instead of GetEntityAsync
+                var query = _table.QueryAsync<AccessCodeEntity>(a => a.RowKey == accessCodeId);
+
+                await foreach (var entity in query)
+                    return entity;
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         public async Task<AccessCodeEntity?> GetAsync(string testId, string accessCode)

@@ -1,0 +1,68 @@
+﻿@page "/student/{AccessCodeId}"
+@inherits quizzer.Pages.Student.TakeTest
+
+@if (IsLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary"></div>
+    </div>
+}
+else if (ErrorMessage != null)
+{
+    <div class="alert alert-warning mt-5 text-center w-75 mx-auto shadow-sm">
+        <i class="bi bi-lock-fill fs-1 text-muted d-block mb-3"></i>
+        <h5 class="fw-bold">Test Unavailable</h5>
+        <p class="mb-3">@ErrorMessage</p>
+        <button class="btn btn-outline-primary" @onclick="GoHome">
+            <i class="bi bi-house-door"></i> Return to Home
+        </button>
+    </div>
+}
+else if (Test != null && Questions.Any())
+{
+    <div class="container mt-4 text-start">
+        <h2 class="fw-bold">@Test.Title</h2>
+        <p class="text-muted">@Test.Description</p>
+        <p>@Test.Instructions</p>
+
+        <EditForm Model="@Responses" OnValidSubmit="SubmitAsync">
+            <DataAnnotationsValidator />
+
+            @foreach (var (q, index) in Questions.Select((q, i) => (q, i + 1)))
+            {
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Question @index</h5>
+                        <p>@q.Prompt</p>
+
+                        <textarea class="form-control"
+                                  rows="4"
+                                  placeholder="Type your answer here..."
+                                  @bind="Responses[q.RowKey]"
+                                  readonly="@IsSubmitted"
+                                  @onblur="() => SaveAnswerAsync(q.RowKey, Responses[q.RowKey])">
+                        </textarea>
+                    </div>
+                </div>
+            }
+
+            @if (!IsSubmitted)
+            {
+                <div class="text-end">
+                    <button class="btn btn-success px-4" type="button" @onclick="SubmitAsync">
+                        Submit Test
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mt-3 text-center w-50 mx-auto shadow-sm">
+                    <i class="bi bi-check-circle-fill text-success"></i>
+                    <strong>You’ve already submitted this test.</strong>
+                    <p class="mb-0">Your answers are locked and can’t be edited.</p>
+                </div>
+            }
+
+        </EditForm>
+    </div>
+}

@@ -1,5 +1,7 @@
-﻿using Azure.Data.Tables;
+﻿using Azure;
+using Azure.Data.Tables;
 using quizzer.Models;
+using System.Text.Json;
 
 namespace quizzer.Services
 {
@@ -11,42 +13,81 @@ namespace quizzer.Services
         {
             var connStr = config.GetConnectionString("StorageAccount")
                           ?? Environment.GetEnvironmentVariable("StorageAccount");
-            if (string.IsNullOrWhiteSpace(connStr))
-                throw new InvalidOperationException("StorageAccount connection string is missing.");
 
-            var serviceClient = new TableServiceClient(connStr);
-            _table = serviceClient.GetTableClient("Submissions");
+            _table = new TableClient(connStr, "Submissions");
             _table.CreateIfNotExists();
         }
 
-        public async Task<SubmissionEntity?> GetAsync(string testId, string accessCode)
+        public async Task<SubmissionEntity?> GetByIdAsync(string testId, string accessCodeId)
         {
             try
             {
-                var response = await _table.GetEntityAsync<SubmissionEntity>(testId, accessCode);
+                var response = await _table.GetEntityAsync<SubmissionEntity>(testId, accessCodeId);
                 return response.Value;
             }
-            catch (Azure.RequestFailedException)
+            catch (RequestFailedException ex) when (ex.Status == 404)
             {
                 return null;
             }
         }
 
-        public async Task<IEnumerable<SubmissionEntity>> GetByTestAsync(string testId)
+        public async Task UpsertAnswerAsync(string testId, string accessCodeId, string questionId, string answer)
+        {
+            // Get existing submission
+            var submission = await GetByIdAsync(testId, accessCodeId)
+                             ?? new SubmissionEntity
+                             {
+                                 PartitionKey = testId,
+                                 RowKey = accessCodeId,
+                                 AnswersJson = "{}",
+                             };
+
+            // Deserialize current answers
+            var answers = string.IsNullOrWhiteSpace(submission.AnswersJson)
+                ? new Dictionary<string, string>()
+                : JsonSerializer.Deserialize<Dictionary<string, string>>(submission.AnswersJson) ?? new();
+
+            // Update this question
+            answers[questionId] = answer;
+
+            // Re-serialize
+            submission.AnswersJson = JsonSerializer.Serialize(answers);
+
+            await _table.UpsertEntityAsync(submission, TableUpdateMode.Replace);
+        }
+
+        public async Task MarkSubmittedAsync(string testId, string accessCodeId)
+        {
+            var submission = await GetByIdAsync(testId, accessCodeId);
+            if (submission == null) return;
+
+            if (submission.SubmittedDate == null)
+            {
+                submission.SubmittedDate = DateTime.UtcNow;
+                await _table.UpdateEntityAsync(submission, ETag.All, TableUpdateMode.Replace);
+            }
+        }
+
+        public async Task<List<SubmissionEntity>> GetByTestAsync(string testId)
         {
             var results = new List<SubmissionEntity>();
-            await foreach (var item in _table.QueryAsync<SubmissionEntity>(s => s.PartitionKey == testId))
-                results.Add(item);
+
+            try
+            {
+                // Query all submissions where PartitionKey == testId
+                var query = _table.QueryAsync<SubmissionEntity>(s => s.PartitionKey == testId);
+
+                await foreach (var entity in query)
+                    results.Add(entity);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading submissions for test {testId}: {ex.Message}");
+            }
+
             return results;
         }
 
-        public async Task AddAsync(SubmissionEntity entity) =>
-            await _table.AddEntityAsync(entity);
-
-        public async Task UpdateAsync(SubmissionEntity entity) =>
-            await _table.UpdateEntityAsync(entity, entity.ETag, TableUpdateMode.Replace);
-
-        public async Task DeleteAsync(string testId, string accessCode) =>
-            await _table.DeleteEntityAsync(testId, accessCode);
     }
 }
+
