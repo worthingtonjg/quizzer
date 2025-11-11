@@ -25,6 +25,11 @@ namespace quizzer.Pages.Student
 
         protected override async Task OnInitializedAsync()
         {
+            await Load();
+        }
+
+        protected async Task Load()
+        {
             try
             {
                 var accessCode = await AccessCodeService.GetByIdAsync(AccessCodeId);
@@ -80,7 +85,6 @@ namespace quizzer.Pages.Student
             }
         }
 
-
         protected async Task SaveAnswerAsync(string questionId, string answer)
         {
             // if the test is submitted, skip saving
@@ -102,10 +106,23 @@ namespace quizzer.Pages.Student
         {
             if (Test == null) return;
 
-            await SubmissionService.MarkSubmittedAsync(Test.RowKey, AccessCodeId);
-            IsSubmitted = true;
-        }
+            try
+            {
+                // Serialize all current responses
+                var allAnswersJson = JsonSerializer.Serialize(Responses);
 
+                // Upsert full answer set in one shot
+                await SubmissionService.SaveAllAnswersAsync(Test.RowKey, AccessCodeId, allAnswersJson);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Final save failed before submission: {ex.Message}");
+            }
+
+            await SubmissionService.MarkSubmittedAsync(Test.RowKey, AccessCodeId);
+
+            await Load();
+        }
 
         protected void GoHome()
         {

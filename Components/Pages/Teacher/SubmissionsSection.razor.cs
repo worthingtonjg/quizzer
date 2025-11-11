@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Components;
-using quizzer.Models;
 using quizzer.Services;
 using System.Text.Json;
 

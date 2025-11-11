@@ -88,6 +88,17 @@ namespace quizzer.Services
             return results;
         }
 
+        public async Task SaveAllAnswersAsync(string testId, string accessCodeId, string answersJson)
+        {
+            var submission = await GetByIdAsync(testId, accessCodeId) ?? new SubmissionEntity
+            {
+                PartitionKey = testId,
+                RowKey = accessCodeId
+            };
+
+            submission.AnswersJson = answersJson;
+            await _table.UpsertEntityAsync(submission);
+        }
     }
 }
 
