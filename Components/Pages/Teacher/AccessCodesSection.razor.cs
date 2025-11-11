@@ -20,6 +20,9 @@ namespace quizzer.Pages.Teacher
         protected bool IsLoading { get; set; } = true;
         protected bool IsGenerating { get; set; } = false;
         protected int GenerateCount { get; set; } = 30;
+        protected bool ShowDeleteAllModal { get; set; }
+        protected void ShowDeleteAllConfirm() => ShowDeleteAllModal = true;
+        protected void HideDeleteAllConfirm() => ShowDeleteAllModal = false;
 
         protected override async Task OnInitializedAsync()
         {
@@ -68,6 +71,13 @@ namespace quizzer.Pages.Teacher
 
             var allLinks = string.Join(Environment.NewLine, Codes.Select(BuildLink));
             await JS.InvokeVoidAsync("navigator.clipboard.writeText", allLinks);
+        }
+
+        protected async Task DeleteAllAccessCodes()
+        {
+            await AccessCodeService.DeleteAllForTestAsync(TestId);
+            ShowDeleteAllModal = false;
+            await LoadCodesAsync();
         }
 
     }

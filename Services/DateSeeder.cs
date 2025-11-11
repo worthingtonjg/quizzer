@@ -14,13 +14,14 @@ namespace quizzer.Services
             var accessCodeService = scope.ServiceProvider.GetRequiredService<AccessCodeService>();
 
             string seedEmail = "teacher@example.com";
+            string seedName = "Sample Teacher";
             string seedPassword = "Pass123!";
 
             // 1️⃣ Seed Teacher
             var teacher = await userService.GetByEmailAsync(seedEmail);
             if (teacher == null)
             {
-                bool success = await userService.RegisterAsync(seedEmail, seedPassword);
+                bool success = await userService.RegisterAsync(seedName, seedEmail, seedPassword);
                 if (success)
                 {
                     teacher = await userService.GetByEmailAsync(seedEmail);

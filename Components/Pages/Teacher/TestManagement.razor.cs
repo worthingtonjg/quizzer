@@ -32,6 +32,12 @@ namespace quizzer.Pages.Teacher
         protected string NewQuestionRubric { get; set; } = string.Empty;
         protected bool ShowDeleteQuestionModal { get; set; }
         protected QuestionEntity? QuestionToDelete { get; set; }
+        protected bool EditingQuestion { get; set; } = false;
+        protected QuestionEntity? QuestionBeingEdited { get; set; }
+        protected string EditPrompt { get; set; } = string.Empty;
+        protected string EditExpectedAnswer { get; set; } = string.Empty;
+        protected string EditRubric { get; set; } = string.Empty;
+        protected int EditPoints { get; set; } = 1;
 
         protected override async Task OnInitializedAsync()
         {
@@ -51,6 +57,51 @@ namespace quizzer.Pages.Teacher
             Questions = await QuestionService.GetByTestAsync(TestId);
             IsLoading = false;
         }
+
+        protected void EditQuestion(QuestionEntity question)
+        {
+            EditingQuestion = true;
+            QuestionBeingEdited = question;
+
+            // Pre-fill fields
+            EditPrompt = question.Prompt;
+            EditExpectedAnswer = question.ExpectedAnswer;
+            EditRubric = question.Rubric;
+            EditPoints = (int)question.MaxPoints;
+        }
+
+        protected void CancelEditQuestion()
+        {
+            EditingQuestion = false;
+            QuestionBeingEdited = null;
+        }
+
+        protected async Task SaveEditedQuestion()
+        {
+            if (QuestionBeingEdited == null || Test == null)
+                return;
+
+            // Update fields
+            QuestionBeingEdited.Prompt = EditPrompt.Trim();
+            QuestionBeingEdited.ExpectedAnswer = EditExpectedAnswer.Trim();
+            QuestionBeingEdited.Rubric = EditRubric.Trim();
+            QuestionBeingEdited.MaxPoints = EditPoints;
+            QuestionBeingEdited.Timestamp = DateTime.UtcNow;
+
+            // Persist to storage
+            await QuestionService.UpdateAsync(QuestionBeingEdited);
+
+            // Re-compute totals
+            Test.QuestionCount = Questions.Count;
+            Test.TotalPoints = (int)Questions.Sum(q => q.MaxPoints);
+            await TestService.UpdateAsync(Test);
+
+            // Reset state
+            EditingQuestion = false;
+            QuestionBeingEdited = null;
+            StateHasChanged();
+        }
+
 
         protected void ConfirmDeleteQuestion(QuestionEntity question)
         {
@@ -169,16 +220,6 @@ namespace quizzer.Pages.Teacher
 
         protected void SwitchTab(string tab) => ActiveTab = tab;
 
-        protected void AddQuestion()
-        {
-        }
-
-        protected void EditQuestion(QuestionEntity question)
-        {
-        }
-
-        #region 🧭 Test Lifecycle Methods
-
         protected async Task PublishTest()
         {
             if (Test == null) return;
@@ -231,9 +272,6 @@ namespace quizzer.Pages.Teacher
             await TestService.UpdateAsync(Test);
             StateHasChanged();
         }
-
-        #endregion
-
 
         protected void GoBack() => Nav.NavigateTo("/teacher/dashboard");
     }

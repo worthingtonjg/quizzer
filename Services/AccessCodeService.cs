@@ -69,5 +69,27 @@ namespace quizzer.Services
                 ++generated;
             }
         }
+
+        public async Task DeleteAllForTestAsync(string testId)
+        {
+            var codes = _table.QueryAsync<AccessCodeEntity>(c => c.PartitionKey == testId);
+            var batch = new List<TableTransactionAction>();
+
+            await foreach (var code in codes)
+            {
+                batch.Add(new TableTransactionAction(TableTransactionActionType.Delete, code));
+
+                // Azure Table Storage allows max 100 ops per batch
+                if (batch.Count == 100)
+                {
+                    await _table.SubmitTransactionAsync(batch);
+                    batch.Clear();
+                }
+            }
+
+            if (batch.Count > 0)
+                await _table.SubmitTransactionAsync(batch);
+        }
+
     }
 }

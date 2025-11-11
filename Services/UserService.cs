@@ -11,7 +11,6 @@ namespace quizzer.Services
 
         public UserService(IConfiguration config)
         {
-            // read from appsettings.json OR environment variable
             var connStr = config.GetConnectionString("StorageAccount")
                           ?? Environment.GetEnvironmentVariable("StorageAccount");
 
@@ -20,7 +19,7 @@ namespace quizzer.Services
 
             var serviceClient = new TableServiceClient(connStr);
             _table = serviceClient.GetTableClient("Users");
-            _table.CreateIfNotExists();  // ensures table exists
+            _table.CreateIfNotExists();
         }
 
         public async Task<UserEntity?> GetByEmailAsync(string email)
@@ -31,16 +30,20 @@ namespace quizzer.Services
             return null;
         }
 
-        public async Task<bool> RegisterAsync(string email, string password)
+        public async Task<bool> RegisterAsync(string name, string email, string password)
         {
             if (await GetByEmailAsync(email) != null)
                 return false; // already exists
 
             var user = new UserEntity
             {
+                PartitionKey = "Users",
+                RowKey = Guid.NewGuid().ToString(),
+                Name = name,
                 Email = email,
                 PasswordHash = _hasher.HashPassword(null!, password),
-                Role = "Teacher"
+                Role = "Teacher",
+                CreatedUtc = DateTime.UtcNow
             };
 
             await _table.AddEntityAsync(user);

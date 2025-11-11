@@ -140,17 +140,56 @@
                     <tbody>
                         @foreach (var (q, index) in Questions.Select((q, i) => (q, i + 1)))
                         {
-                            <tr>
-                                <td>@index</td>
-                                <td>@q.Prompt</td>
-                                <td>@q.MaxPoints</td>
-                                <td>
-                                    <div class="btn-group w-100">
-                                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditQuestion(q)">Edit</button>
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDeleteQuestion(q)">Delete</button>
-                                    </div>
-                                </td>
-                            </tr>
+                            if (EditingQuestion && QuestionBeingEdited == q)
+                            {
+                                <tr class="table-info">
+                                    <td>@index</td>
+                                    <td colspan="3">
+                                        <div class="mb-2">
+                                            <label class="form-label fw-semibold small">Question Prompt</label>
+                                            <textarea class="form-control" rows="2"
+                                                      @bind="EditPrompt"></textarea>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label fw-semibold small">Expected Answer</label>
+                                            <textarea class="form-control" rows="2"
+                                                      @bind="EditExpectedAnswer"></textarea>
+                                        </div>
+
+                                        <div class="mb-2">
+                                            <label class="form-label fw-semibold small">Rubric</label>
+                                            <textarea class="form-control" rows="2"
+                                                      @bind="EditRubric"></textarea>
+                                        </div>
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="flex-grow-1">
+                                                <label class="form-label fw-semibold small mb-0">Points</label>
+                                                <input type="number" class="form-control" min="1" @bind="EditPoints" />
+                                            </div>
+                                            <div class="flex-grow-1 text-end mt-4">
+                                                <button class="btn btn-success me-2" @onclick="SaveEditedQuestion">Save</button>
+                                                <button class="btn btn-outline-secondary" @onclick="CancelEditQuestion">Cancel</button>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                <tr>
+                                    <td>@index</td>
+                                    <td>@q.Prompt</td>
+                                    <td>@q.MaxPoints</td>
+                                    <td>
+                                        <div class="btn-group w-100">
+                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditQuestion(q)">Edit</button>
+                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDeleteQuestion(q)">Delete</button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
                         }
 
                         @if (AddingQuestion)

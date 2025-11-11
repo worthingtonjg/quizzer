@@ -1,0 +1,33 @@
+﻿@page "/teacher/register"
+@inherits quizzer.Pages.Teacher.Register
+
+<h3 class="mb-4 text-start">Teacher Registration</h3>
+
+@if (!string.IsNullOrEmpty(Message))
+{
+    <div class="alert alert-info text-start">@Message</div>
+}
+
+<EditForm Model="@teacher" OnValidSubmit="RegisterAsync">
+    <DataAnnotationsValidator />
+    <ValidationSummary class="text-start" />
+
+    <div class="form-group mb-3 text-start">
+        <label class="form-label fw-bold">Name</label>
+        <InputText @bind-Value="teacher.Name" class="form-control w-50" />
+    </div>
+
+    <div class="form-group mb-3 text-start">
+        <label class="form-label fw-bold">Email</label>
+        <InputText @bind-Value="teacher.Email" class="form-control w-50" />
+    </div>
+
+    <div class="form-group mb-3 text-start">
+        <label class="form-label fw-bold">Password</label>
+        <InputText @bind-Value="teacher.Password" type="password" class="form-control w-50" />
+    </div>
+
+    <div class="d-flex justify-content-end w-50">
+        <button type="submit" class="btn btn-primary px-4">Register</button>
+    </div>
+</EditForm>
