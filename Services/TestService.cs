@@ -67,5 +67,13 @@ namespace quizzer.Services
                 return null;
             }
         }
+
+        public async Task<TestEntity?> GetByTestIdAsync(string testId)
+        {
+            await foreach (var entity in _table.QueryAsync<TestEntity>(t => t.RowKey == testId))
+                return entity; // should only be one
+
+            return null;
+        }
     }
 }

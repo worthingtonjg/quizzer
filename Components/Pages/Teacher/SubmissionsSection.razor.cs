@@ -8,6 +8,7 @@ namespace quizzer.Pages.Teacher
     {
         [Parameter] public string TestId { get; set; } = string.Empty;
 
+        [Inject] protected TestService TestService { get; set; } = default!;
         [Inject] protected SubmissionService SubmissionService { get; set; } = default!;
         [Inject] protected AccessCodeService AccessCodeService { get; set; } = default!;
         [Inject] protected QuestionService QuestionService { get; set; } = default!;
@@ -27,6 +28,7 @@ namespace quizzer.Pages.Teacher
         {
             var subs = new List<SubmissionView>();
 
+            var test = await TestService.GetByTestIdAsync(testId);
             var submissionEntities = await SubmissionService.GetByTestAsync(testId);
             var accessCodes = await AccessCodeService.GetByTestAsync(testId);
             var questions = await QuestionService.GetByTestAsync(testId);
@@ -58,7 +60,7 @@ namespace quizzer.Pages.Teacher
                     StartedDate = submission?.Timestamp?.UtcDateTime,
                     SubmittedDate = submission?.SubmittedDate,
                     Score = submission?.Score,
-                    MaxScore = submission?.MaxScore,
+                    MaxScore = test?.TotalPoints,
                     QuestionsAnswered = answeredCount,
                     TotalQuestions = totalQuestions
                 });

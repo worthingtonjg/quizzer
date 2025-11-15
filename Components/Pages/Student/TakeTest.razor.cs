@@ -17,11 +17,20 @@ namespace quizzer.Pages.Student
 
         protected bool IsLoading { get; set; } = true;
         protected string? ErrorMessage { get; set; }
-
         protected TestEntity? Test { get; set; }
+        protected SubmissionEntity? Submission { get; set; }
         protected List<QuestionEntity> Questions { get; set; } = new();
         protected Dictionary<string, string> Responses { get; set; } = new();
         protected bool IsSubmitted { get; set; } = false;
+        protected bool IsGraded => Submission?.Graded == true;
+        protected Dictionary<string, double> PerQuestionScores { get; set; } = new();
+        protected Dictionary<string, string> PerQuestionFeedback { get; set; } = new();
+
+        public class QuestionGradeResult
+        {
+            public double Score { get; set; }
+            public string Feedback { get; set; } = string.Empty;
+        }
 
         protected override async Task OnInitializedAsync()
         {
@@ -62,20 +71,35 @@ namespace quizzer.Pages.Student
                 Responses = Questions.ToDictionary(q => q.RowKey, q => string.Empty);
 
                 // 🟩 Load existing submission
-                var existingSubmission = await SubmissionService.GetByIdAsync(Test.RowKey, AccessCodeId);
-                if (existingSubmission != null)
+                Submission = await SubmissionService.GetByIdAsync(Test.RowKey, AccessCodeId);
+                if (Submission != null)
                 {
-                    IsSubmitted = existingSubmission.SubmittedDate != null;  // 🟩 key change
+                    IsSubmitted = Submission.SubmittedDate != null;  // 🟩 key change
 
-                    if (!string.IsNullOrEmpty(existingSubmission.AnswersJson))
+                    if (!string.IsNullOrEmpty(Submission.AnswersJson))
                     {
-                        var savedAnswers = JsonSerializer.Deserialize<Dictionary<string, string>>(existingSubmission.AnswersJson);
+                        var savedAnswers = JsonSerializer.Deserialize<Dictionary<string, string>>(Submission.AnswersJson);
                         if (savedAnswers != null)
                         {
                             foreach (var kvp in savedAnswers)
                                 if (Responses.ContainsKey(kvp.Key))
                                     Responses[kvp.Key] = kvp.Value;
                         }
+                    }
+
+                    if (Submission.Graded)
+                    {
+                        // Load per-question scores
+                        if (!string.IsNullOrWhiteSpace(Submission.PerQuestionScoresJson))
+                            PerQuestionScores =
+                                JsonSerializer.Deserialize<Dictionary<string, double>>(Submission.PerQuestionScoresJson)
+                                ?? new();
+
+                        // Load per-question feedback
+                        if (!string.IsNullOrWhiteSpace(Submission.Feedback))
+                            PerQuestionFeedback =
+                                JsonSerializer.Deserialize<Dictionary<string, string>>(Submission.Feedback)
+                                ?? new();
                     }
                 }
             }
@@ -88,7 +112,7 @@ namespace quizzer.Pages.Student
         protected async Task SaveAnswerAsync(string questionId, string answer)
         {
             // if the test is submitted, skip saving
-            if (Test == null || IsSubmitted)
+            if (Test == null || IsSubmitted || IsGraded)
                 return;
 
             try

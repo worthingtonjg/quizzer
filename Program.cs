@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server;
 using quizzer.Components;
 using quizzer.Services;
+using Quartz;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +15,24 @@ builder.Services.AddSingleton<QuestionService>();
 builder.Services.AddSingleton<SubmissionService>();
 builder.Services.AddSingleton<TestService>();
 builder.Services.AddSingleton<UserService>();
+
+builder.Services.AddQuartz(q =>
+{
+    var jobKey = new JobKey("GradeSubmissionsJob");
+
+    q.AddJob<GradeSubmissionsJob>(opts => opts.WithIdentity(jobKey));
+
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("GradeSubmissionsJob-trigger")
+        .WithSimpleSchedule(x => x
+            .WithInterval(TimeSpan.FromMinutes(5)) 
+            .RepeatForever()
+            )
+    );
+});
+
+builder.Services.AddQuartzHostedService();
 
 // Add cookie-based authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)

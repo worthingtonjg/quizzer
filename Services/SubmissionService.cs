@@ -99,6 +99,34 @@ namespace quizzer.Services
             submission.AnswersJson = answersJson;
             await _table.UpsertEntityAsync(submission);
         }
+
+        public async Task<List<SubmissionEntity>> GetUngradedAsync()
+        {
+            var results = new List<SubmissionEntity>();
+
+            var cutoff = DateTime.Today.AddDays(-1);
+
+            string filter = TableClient.CreateQueryFilter<SubmissionEntity>(
+                s => s.SubmittedDate >= cutoff
+            );
+
+            await foreach (var s in _table.QueryAsync<SubmissionEntity>(filter))
+            {
+                if (s.SubmittedDate != null && s.GradedDate == null)
+                    results.Add(s);
+            }
+
+            // Only grade 50 tests at a time, ordered by submission date
+            return results
+                .OrderBy(s => s.SubmittedDate)  
+                .Take(50)
+                .ToList();
+        }
+
+        public async Task SaveSubmissionAsync(SubmissionEntity submission)
+        {
+            await _table.UpsertEntityAsync(submission, TableUpdateMode.Replace);
+        }
     }
 }
 
