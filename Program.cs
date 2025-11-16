@@ -2,6 +2,7 @@
 using quizzer.Components;
 using quizzer.Services;
 using Quartz;
+using quizzer.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,23 +17,23 @@ builder.Services.AddSingleton<SubmissionService>();
 builder.Services.AddSingleton<TestService>();
 builder.Services.AddSingleton<UserService>();
 
-builder.Services.AddQuartz(q =>
-{
-    var jobKey = new JobKey("GradeSubmissionsJob");
+//builder.Services.AddQuartz(q =>
+//{
+//    var jobKey = new JobKey("GradeSubmissionsJob");
 
-    q.AddJob<GradeSubmissionsJob>(opts => opts.WithIdentity(jobKey));
+//    q.AddJob<GradeSubmissionsJob>(opts => opts.WithIdentity(jobKey));
 
-    q.AddTrigger(opts => opts
-        .ForJob(jobKey)
-        .WithIdentity("GradeSubmissionsJob-trigger")
-        .WithSimpleSchedule(x => x
-            .WithInterval(TimeSpan.FromMinutes(5)) 
-            .RepeatForever()
-            )
-    );
-});
+//    q.AddTrigger(opts => opts
+//        .ForJob(jobKey)
+//        .WithIdentity("GradeSubmissionsJob-trigger")
+//        .WithSimpleSchedule(x => x
+//            .WithInterval(TimeSpan.FromMinutes(5)) 
+//            .RepeatForever()
+//            )
+//    );
+//});
 
-builder.Services.AddQuartzHostedService();
+//builder.Services.AddQuartzHostedService();
 
 // Add cookie-based authentication
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -77,6 +78,6 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-await DataSeeder.SeedAsync(app.Services);
+//await DataSeeder.SeedAsync(app.Services);
 
 app.Run();
