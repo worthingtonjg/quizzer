@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using quizzer.Models;
+using quizzer.Data.Entities;
 using quizzer.Services;
 
 namespace quizzer.Pages.Teacher
@@ -14,11 +14,11 @@ namespace quizzer.Pages.Teacher
         [Inject] protected QuestionService QuestionService { get; set; } = default!;
         [Inject] protected UserService UserService { get; set; } = default!;  // 🔹 used for current teacher
 
-        protected TestEntity? Test { get; set; }
+        protected TestEntity Test { get; set; }
         protected List<QuestionEntity> Questions { get; set; } = new();
         protected bool IsLoading { get; set; } = true;
-        protected string? TeacherId { get; set; }
-        protected string? TeacherEmail { get; set; }
+        protected string TeacherId { get; set; }
+        protected string TeacherEmail { get; set; }
         protected readonly string[] Tabs = new[] { "Edit", "Access Codes", "Submissions" };
         protected string ActiveTab { get; set; } = "Edit";
         protected bool ShowDeleteModal { get; set; } = false;
@@ -31,9 +31,9 @@ namespace quizzer.Pages.Teacher
         protected string NewQuestionExpectedAnswer { get; set; } = string.Empty;
         protected string NewQuestionRubric { get; set; } = string.Empty;
         protected bool ShowDeleteQuestionModal { get; set; }
-        protected QuestionEntity? QuestionToDelete { get; set; }
+        protected QuestionEntity QuestionToDelete { get; set; }
         protected bool EditingQuestion { get; set; } = false;
-        protected QuestionEntity? QuestionBeingEdited { get; set; }
+        protected QuestionEntity QuestionBeingEdited { get; set; }
         protected string EditPrompt { get; set; } = string.Empty;
         protected string EditExpectedAnswer { get; set; } = string.Empty;
         protected string EditRubric { get; set; } = string.Empty;
@@ -161,7 +161,6 @@ namespace quizzer.Pages.Teacher
                 ExpectedAnswer = NewQuestionExpectedAnswer.Trim(),
                 Rubric = NewQuestionRubric.Trim(),
                 MaxPoints = NewQuestionPoints,
-                CreatedDate = DateTime.UtcNow
             };
 
             await QuestionService.AddAsync(newQuestion);

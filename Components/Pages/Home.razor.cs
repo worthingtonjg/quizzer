@@ -11,7 +11,7 @@ namespace quizzer.Pages
         protected bool IsLoading { get; set; } = true;
         
         protected string AccessCode { get; set; } = string.Empty;
-        protected string? ErrorMessage { get; set; }
+        protected string ErrorMessage { get; set; }
         
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -34,7 +34,7 @@ namespace quizzer.Pages
         protected void GoToLogin() => Nav.NavigateTo("/teacher/dashboard");
         protected void GoToRegister() => Nav.NavigateTo("/teacher/register");
 
-        protected async Task StartTest()
+        protected void StartTest()
         {
             if (string.IsNullOrWhiteSpace(AccessCode))
             {

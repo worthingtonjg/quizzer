@@ -1,6 +1,6 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using quizzer.Models;
+using quizzer.Data.Entities;
 
 namespace quizzer.Services
 {
@@ -24,7 +24,6 @@ namespace quizzer.Services
         // 🔹 Add a new test
         public async Task AddAsync(TestEntity test)
         {
-            test.CreatedDate = DateTime.UtcNow;
             test.LastModifiedDate = DateTime.UtcNow;
             await _table.AddEntityAsync(test);
         }
@@ -55,7 +54,7 @@ namespace quizzer.Services
         }
 
         // 🔹 Get a test by teacher and test ID (key-based lookup)
-        public async Task<TestEntity?> GetByIdAsync(string teacherId, string testId)
+        public async Task<TestEntity> GetByIdAsync(string teacherId, string testId)
         {
             try
             {
@@ -68,7 +67,7 @@ namespace quizzer.Services
             }
         }
 
-        public async Task<TestEntity?> GetByTestIdAsync(string testId)
+        public async Task<TestEntity> GetByTestIdAsync(string testId)
         {
             await foreach (var entity in _table.QueryAsync<TestEntity>(t => t.RowKey == testId))
                 return entity; // should only be one

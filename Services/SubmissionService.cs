@@ -1,6 +1,6 @@
 ﻿using Azure;
 using Azure.Data.Tables;
-using quizzer.Models;
+using quizzer.Data.Entities;
 using System.Text.Json;
 
 namespace quizzer.Services
@@ -18,7 +18,7 @@ namespace quizzer.Services
             _table.CreateIfNotExists();
         }
 
-        public async Task<SubmissionEntity?> GetByIdAsync(string testId, string accessCodeId)
+        public async Task<SubmissionEntity> GetByIdAsync(string testId, string accessCodeId)
         {
             try
             {

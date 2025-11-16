@@ -1,4 +1,5 @@
-﻿using quizzer.Models;
+﻿using quizzer.Data;
+using quizzer.Data.Entities;
 
 namespace quizzer.Services
 {

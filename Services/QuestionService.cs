@@ -1,5 +1,5 @@
 ﻿using Azure.Data.Tables;
-using quizzer.Models;
+using quizzer.Data.Entities;
 
 namespace quizzer.Services
 {

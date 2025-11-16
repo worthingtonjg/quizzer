@@ -1,7 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components.Authorization;
-using quizzer.Models;
-using quizzer.Models.YourAppNamespace.Models;
-using quizzer.Services;
+using quizzer.Data.Entities;
 using System.Security.Claims;
 
 namespace quizzer.Services
@@ -11,7 +9,7 @@ namespace quizzer.Services
         private readonly AuthenticationStateProvider _authStateProvider;
         private readonly UserService _userService;
 
-        private UserEntity? _cachedUser;
+        private UserEntity _cachedUser;
 
         public CurrentUserService(AuthenticationStateProvider authStateProvider, UserService userService)
         {
@@ -19,7 +17,7 @@ namespace quizzer.Services
             _userService = userService;
         }
 
-        public async Task<UserEntity?> GetCurrentUserAsync()
+        public async Task<UserEntity> GetCurrentUserAsync()
         {
             if (_cachedUser != null)
                 return _cachedUser;
@@ -41,13 +39,13 @@ namespace quizzer.Services
             return _cachedUser;
         }
 
-        public async Task<string?> GetTeacherIdAsync()
+        public async Task<string> GetTeacherIdAsync()
         {
             var user = await GetCurrentUserAsync();
             return user?.RowKey;
         }
 
-        public async Task<string?> GetEmailAsync()
+        public async Task<string> GetEmailAsync()
         {
             var user = await GetCurrentUserAsync();
             return user?.Email;

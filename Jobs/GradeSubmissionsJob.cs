@@ -61,6 +61,7 @@ public class GradeSubmissionsJob : IJob
                         ? answers[q.RowKey]
                         : string.Empty;
 
+                    #region prompt
                     var prompt = $@"
 You are an impartial grader for a teacher. Grade the student's answer using the test context below.
 
@@ -94,6 +95,7 @@ Return ONLY the following JSON with no commentary:
   ""score"": ""string"",
   ""explanation"": ""string"",
 }}";
+                    #endregion
 
                     var result = await _kernel.InvokePromptAsync(prompt);
                     var json = result.ToString();
@@ -111,14 +113,13 @@ Return ONLY the following JSON with no commentary:
 
                 // Save results
                 submission.Score = totalScore;
-                submission.Graded = true;
                 submission.GradedDate = DateTime.UtcNow;
                 submission.PerQuestionScoresJson = JsonSerializer.Serialize(perQuestionScores);
                 submission.Feedback = JsonSerializer.Serialize(perQuestionFeedback);
-
+                
                 await _submissionService.SaveSubmissionAsync(submission);
-
-                Console.WriteLine($"Finished grading {submission.RowKey}. Score={submission.Score}/{submission.MaxScore}");
+                
+                Console.WriteLine($"Finished grading {submission.RowKey}. Score={submission.Score}/{test.TotalPoints}");
             }
             catch (Exception ex)
             {

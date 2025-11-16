@@ -18,7 +18,7 @@ namespace quizzer.Controllers
 
         // ✅ GET /auth/login?returnUrl=...
         [HttpGet("login")]
-        public IActionResult LoginPage([FromQuery] string? returnUrl = "/")
+        public IActionResult LoginPage([FromQuery] string returnUrl = "/")
         {
             // Redirect to the Blazor login page, preserving returnUrl
             return Redirect($"/login?returnUrl={Uri.EscapeDataString(returnUrl ?? "/")}");
@@ -26,7 +26,7 @@ namespace quizzer.Controllers
 
         // ✅ POST /auth/login?returnUrl=...
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] LoginRequest request, [FromQuery] string? returnUrl = "/")
+        public async Task<IActionResult> Login([FromForm] LoginRequest request, [FromQuery] string returnUrl = "/")
         {
             var user = await _userService.ValidateCredentialsAsync(request.Email, request.Password);
             if (user == null)
@@ -35,7 +35,7 @@ namespace quizzer.Controllers
             var claims = new List<Claim>
             {
                 new(ClaimTypes.Name, user.Email),
-                new(ClaimTypes.Role, user.Role)
+                new(ClaimTypes.Role, user.PartitionKey)
             };
 
             var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
@@ -51,7 +51,7 @@ namespace quizzer.Controllers
         }
 
         [HttpGet("logout")]
-        public async Task<IActionResult> Logout([FromQuery] string? returnUrl = "/login")
+        public async Task<IActionResult> Logout([FromQuery] string returnUrl = "/login")
         {
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return Redirect(returnUrl ?? "/login");

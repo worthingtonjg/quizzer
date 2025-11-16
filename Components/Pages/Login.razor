@@ -4,11 +4,11 @@
 @code {
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? ReturnUrl { get; set; }
+    public string ReturnUrl { get; set; }
 
     [Parameter]
     [SupplyParameterFromQuery]
-    public string? Error { get; set; }
+    public string Error { get; set; }
 
     private string errorMessage => Error == "invalid" ? "Invalid email or password." : "";
 }

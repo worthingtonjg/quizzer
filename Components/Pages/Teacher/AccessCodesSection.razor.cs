@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
-using quizzer.Models;
+using quizzer.Data.Entities;
 using quizzer.Services;
 
 namespace quizzer.Pages.Teacher
@@ -14,8 +14,8 @@ namespace quizzer.Pages.Teacher
         [Inject] protected AccessCodeService AccessCodeService { get; set; } = default!;
         [Inject] protected NavigationManager Nav { get; set; } = default!;
 
-        protected string? TeacherId { get; set; }
-        protected string? TeacherEmail { get; set; }
+        protected string TeacherId { get; set; }
+        protected string TeacherEmail { get; set; }
         protected List<AccessCodeEntity> Codes { get; set; } = new();
         protected bool IsLoading { get; set; } = true;
         protected bool IsGenerating { get; set; } = false;

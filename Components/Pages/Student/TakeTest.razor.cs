@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
-using quizzer.Models;
+using quizzer.Data.Entities;
 using quizzer.Services;
 using System.Text.Json;
 
@@ -16,9 +16,9 @@ namespace quizzer.Pages.Student
         [Inject] protected NavigationManager Nav { get; set; } = default!;
 
         protected bool IsLoading { get; set; } = true;
-        protected string? ErrorMessage { get; set; }
-        protected TestEntity? Test { get; set; }
-        protected SubmissionEntity? Submission { get; set; }
+        protected string ErrorMessage { get; set; }
+        protected TestEntity Test { get; set; }
+        protected SubmissionEntity Submission { get; set; }
         protected List<QuestionEntity> Questions { get; set; } = new();
         protected Dictionary<string, string> Responses { get; set; } = new();
         protected bool IsSubmitted { get; set; } = false;

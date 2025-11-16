@@ -1,5 +1,5 @@
 ﻿using Azure.Data.Tables;
-using quizzer.Models;
+using quizzer.Data.Entities;
 
 namespace quizzer.Services
 {
@@ -19,7 +19,7 @@ namespace quizzer.Services
             _table.CreateIfNotExists();
         }
 
-        public async Task<AccessCodeEntity?> GetByIdAsync(string accessCodeId)
+        public async Task<AccessCodeEntity> GetByIdAsync(string accessCodeId)
         {
             try
             {
@@ -37,7 +37,7 @@ namespace quizzer.Services
             }
         }
 
-        public async Task<AccessCodeEntity?> GetAsync(string testId, string accessCode)
+        public async Task<AccessCodeEntity> GetAsync(string testId, string accessCode)
         {
             try
             {

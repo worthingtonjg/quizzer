@@ -10,7 +10,7 @@ namespace quizzer.Pages.Teacher
         [Inject] protected NavigationManager Nav { get; set; } = default!;
 
         protected TeacherRegistrationModel teacher = new();
-        protected string? Message;
+        protected string Message;
 
         protected async Task RegisterAsync()
         {

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
-using quizzer.Models;
+using quizzer.Data.Entities;
 using quizzer.Services;
 
 namespace quizzer.Pages.Teacher
@@ -13,8 +13,8 @@ namespace quizzer.Pages.Teacher
         [Inject] protected TestService TestService { get; set; } = default!;
 
         protected bool IsLoading { get; set; } = true;
-        protected string? TeacherEmail { get; set; }
-        protected string? TeacherId { get; set; }
+        protected string TeacherEmail { get; set; }
+        protected string TeacherId { get; set; }
 
         protected List<TestEntity> AllTests { get; set; } = new();
         protected List<TestEntity> FilteredTests { get; set; } = new();
@@ -88,8 +88,6 @@ namespace quizzer.Pages.Teacher
                 IsOpen = false,
                 QuestionCount = 0,
                 TotalPoints = 0,
-                CreatedDate = DateTime.UtcNow,
-                LastModifiedDate = DateTime.UtcNow
             };
 
             await TestService.AddAsync(newTest);

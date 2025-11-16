@@ -1,6 +1,6 @@
 ﻿using Azure.Data.Tables;
 using Microsoft.AspNetCore.Identity;
-using quizzer.Models.YourAppNamespace.Models;
+using quizzer.Data.Entities;
 
 namespace quizzer.Services
 {
@@ -22,7 +22,7 @@ namespace quizzer.Services
             _table.CreateIfNotExists();
         }
 
-        public async Task<UserEntity?> GetByEmailAsync(string email)
+        public async Task<UserEntity> GetByEmailAsync(string email)
         {
             var results = _table.QueryAsync<UserEntity>(u => u.Email == email);
             await foreach (var user in results)
@@ -37,20 +37,18 @@ namespace quizzer.Services
 
             var user = new UserEntity
             {
-                PartitionKey = "Users",
+                PartitionKey = "Teacher",
                 RowKey = Guid.NewGuid().ToString(),
                 Name = name,
                 Email = email,
                 PasswordHash = _hasher.HashPassword(null!, password),
-                Role = "Teacher",
-                CreatedUtc = DateTime.UtcNow
             };
 
             await _table.AddEntityAsync(user);
             return true;
         }
 
-        public async Task<UserEntity?> ValidateCredentialsAsync(string email, string password)
+        public async Task<UserEntity> ValidateCredentialsAsync(string email, string password)
         {
             var user = await GetByEmailAsync(email);
             if (user == null) return null;
