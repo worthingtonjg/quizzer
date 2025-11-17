@@ -18,5 +18,27 @@ namespace quizzer.Data.Entities
 
         // Read-only properties for convenience
         public bool IsClosed => IsPublished && !IsOpen;
+
+        public TestEntity()
+        {
+                
+        }
+
+        public TestEntity(string courseId, string title, string description = null, string instructions = null, int questionCount = 0, int totalPoints = 0, bool isOpen = false)
+        {
+            PartitionKey = courseId;
+            RowKey = Guid.NewGuid().ToString();
+            Title = title;
+
+            // Data seeding values
+            Description = description;
+            Instructions = instructions;
+            QuestionCount = questionCount;
+            TotalPoints = totalPoints;
+
+            // By default, if a test is open, it is also published (for data seeding purposes)
+            IsOpen = isOpen;
+            IsPublished = isOpen;
+        }
     }
 }

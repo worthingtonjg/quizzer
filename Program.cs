@@ -11,8 +11,11 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 builder.Services.AddSingleton<AccessCodeService>();
+builder.Services.AddSingleton<ClassPeriodService>();
+builder.Services.AddSingleton<CourseService>();
 builder.Services.AddScoped<CurrentUserService>();
 builder.Services.AddSingleton<QuestionService>();
+builder.Services.AddSingleton<StudentService>();
 builder.Services.AddSingleton<SubmissionService>();
 builder.Services.AddSingleton<TestService>();
 builder.Services.AddSingleton<UserService>();
@@ -78,6 +81,6 @@ app.MapControllers();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
-//await DataSeeder.SeedAsync(app.Services);
+await DataSeeder.SeedAsync(app.Services);
 
 app.Run();

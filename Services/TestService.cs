@@ -74,5 +74,28 @@ namespace quizzer.Services
 
             return null;
         }
+
+        public async Task<List<TestEntity>> GetByCourseAsync(string courseId)
+        {
+            var results = new List<TestEntity>();
+
+            try
+            {
+                // Query all tests belonging to this course
+                var query = _table.QueryAsync<TestEntity>(t => t.PartitionKey == courseId);
+
+                await foreach (var entity in query)
+                    results.Add(entity);
+
+                // Optional: sort by title or creation date
+                return results.OrderBy(t => t.Title).ToList();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error loading tests for course '{courseId}': {ex.Message}");
+                return new List<TestEntity>();
+            }
+        }
+
     }
 }

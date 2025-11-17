@@ -16,7 +16,7 @@ namespace quizzer.Pages
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender)
+            if (firstRender)    
             {
                 var teacher = await CurrentUser.GetCurrentUserAsync();
                 if (teacher != null)
@@ -34,7 +34,7 @@ namespace quizzer.Pages
         protected void GoToLogin() => Nav.NavigateTo("/teacher/dashboard");
         protected void GoToRegister() => Nav.NavigateTo("/teacher/register");
 
-        protected void StartTest()
+        protected void LoadStudentDashboard()
         {
             if (string.IsNullOrWhiteSpace(AccessCode))
             {

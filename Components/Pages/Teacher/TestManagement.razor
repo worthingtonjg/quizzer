@@ -1,12 +1,11 @@
-﻿@page "/teacher/tests/{TestId}"
-@inherits quizzer.Pages.Teacher.TestManagement;
+﻿@page "/teacher/edit/{TestId}"
 
-<PageTitle>Manage Test</PageTitle>
+<PageTitle>Edit Test</PageTitle>
 
-<div class="container py-5">
+<div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="fw-bold mb-0">Manage Test</h2>
+            <h2 class="fw-bold mb-0">@Test?.Title</h2>
             <div class="mt-1">
                 @if (Test != null)
                 {
@@ -37,221 +36,198 @@
     }
     else if (Test != null)
     {
-        <ul class="nav nav-tabs mb-3">
-            @foreach (var tab in Tabs)
+        <div class="text-start">
+            <div class="mb-3">
+                <label class="form-label text-start">Title</label>
+                <input 
+                    class="form-control" 
+                    @bind="Test.Title"
+                    @onblur="AutoSaveAsync" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Description</label>
+                <input 
+                    class="form-control" 
+                    @bind="Test.Description"
+                    @onblur="AutoSaveAsync" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Instructions</label>
+                <textarea 
+                    class="form-control" 
+                    rows="4" 
+                    @bind="Test.Instructions"
+                    @onblur="AutoSaveAsync"></textarea>
+            </div>
+
+            @if (IsSaving)
             {
-                <li class="nav-item">
-                    <button class="nav-link @(ActiveTab == tab ? "active" : "")"
-                            @onclick="() => SwitchTab(tab)">
-                        @tab
-                    </button>
-                </li>
+                <div class="text-success small">✓ Changes saved</div>
             }
-        </ul>
 
-        @if (ActiveTab == "Edit")
-        {
-            <div class="text-start">
-                <div class="mb-3">
-                    <label class="form-label text-start">Title</label>
-                    <input 
-                        class="form-control" 
-                        @bind="Test.Title"
-                        @onblur="AutoSaveAsync" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Description</label>
-                    <input 
-                        class="form-control" 
-                        @bind="Test.Description"
-                        @onblur="AutoSaveAsync" />
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label">Instructions</label>
-                    <textarea 
-                        class="form-control" 
-                        rows="4" 
-                        @bind="Test.Instructions"
-                        @onblur="AutoSaveAsync"></textarea>
-                </div>
-
-                @if (IsSaving)
+            <div class="mb-3 d-flex flex-wrap gap-2">
+                @if (!Test.IsPublished)
                 {
-                    <div class="text-success small">✓ Changes saved</div>
-                }
-
-                <div class="mb-3 d-flex flex-wrap gap-2">
-                    @if (!Test.IsPublished)
-                    {
-                        <button class="btn btn-info" @onclick="PublishTest">
-                            🚀 Publish
-                        </button>
-                    }
-                    else if (Test.IsPublished && !Test.IsOpen)
-                    {
-                        <button class="btn btn-success" @onclick="OpenTest">
-                            ✅ Open Test
-                        </button>
-                        <button class="btn btn-outline-warning" @onclick="UnpublishTest">
-                            🔙 Unpublish
-                        </button>
-                    }
-                    else if (Test.IsOpen)
-                    {
-                        <button class="btn btn-dark" @onclick="CloseTest">
-                            🔒 Close Test
-                        </button>
-                    }
-                    else if (!Test.IsOpen && Test.IsPublished && Test.IsClosed)
-                    {
-                        <button class="btn btn-success" @onclick="ReopenTest">
-                            🔁 Reopen Test
-                        </button>
-                    }
-
-                    <!-- Delete Test -->
-                    <button class="btn btn-outline-danger ms-auto" @onclick="ShowDeleteConfirm">
-                        🗑️ Delete Test
+                    <button class="btn btn-info" @onclick="PublishTest">
+                        🚀 Publish
                     </button>
-                </div>
-
-
-
-                <hr />
-
-                <h5 class="fw-bold mb-3">Questions</h5>
-
-                @if (Questions.Count == 0 && !AddingQuestion)
+                }
+                else if (Test.IsPublished && !Test.IsOpen)
                 {
-                    <div class="alert alert-light">No questions yet. Add your first question below.</div>
+                    <button class="btn btn-success" @onclick="OpenTest">
+                        ✅ Open Test
+                    </button>
+                    <button class="btn btn-outline-warning" @onclick="UnpublishTest">
+                        🔙 Unpublish
+                    </button>
+                }
+                else if (Test.IsOpen)
+                {
+                    <button class="btn btn-dark" @onclick="CloseTest">
+                        🔒 Close Test
+                    </button>
+                }
+                else if (!Test.IsOpen && Test.IsPublished && Test.IsClosed)
+                {
+                    <button class="btn btn-success" @onclick="ReopenTest">
+                        🔁 Reopen Test
+                    </button>
                 }
 
-                <table class="table table-striped align-middle">
-                    <thead class="table-light">
-                        <tr>
-                            <th style="width:50px;">#</th>
-                            <th>Prompt</th>
-                            <th style="width:100px;">Points</th>
-                            <th style="width:180px;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var (q, index) in Questions.Select((q, i) => (q, i + 1)))
+                <!-- Delete Test -->
+                <button class="btn btn-outline-danger ms-auto" @onclick="ShowDeleteConfirm">
+                    🗑️ Delete Test
+                </button>
+            </div>
+
+
+
+            <hr />
+
+            <h5 class="fw-bold mb-3">Questions</h5>
+
+            @if (Questions.Count == 0 && !AddingQuestion)
+            {
+                <div class="alert alert-light">No questions yet. Add your first question below.</div>
+            }
+
+            <table class="table table-striped align-middle">
+                <thead class="table-light">
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th>Prompt</th>
+                        <th style="width:100px;">Points</th>
+                        <th style="width:180px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var (q, index) in Questions.Select((q, i) => (q, i + 1)))
+                    {
+                        if (EditingQuestion && QuestionBeingEdited == q)
                         {
-                            if (EditingQuestion && QuestionBeingEdited == q)
-                            {
-                                <tr class="table-info">
-                                    <td>@index</td>
-                                    <td colspan="3">
-                                        <div class="mb-2">
-                                            <label class="form-label fw-semibold small">Question Prompt</label>
-                                            <textarea class="form-control" rows="2"
-                                                      @bind="EditPrompt"></textarea>
-                                        </div>
-
-                                        <div class="mb-2">
-                                            <label class="form-label fw-semibold small">Expected Answer</label>
-                                            <textarea class="form-control" rows="2"
-                                                      @bind="EditExpectedAnswer"></textarea>
-                                        </div>
-
-                                        <div class="mb-2">
-                                            <label class="form-label fw-semibold small">Rubric</label>
-                                            <textarea class="form-control" rows="2"
-                                                      @bind="EditRubric"></textarea>
-                                        </div>
-
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="flex-grow-1">
-                                                <label class="form-label fw-semibold small mb-0">Points</label>
-                                                <input type="number" class="form-control" min="1" @bind="EditPoints" />
-                                            </div>
-                                            <div class="flex-grow-1 text-end mt-4">
-                                                <button class="btn btn-success me-2" @onclick="SaveEditedQuestion">Save</button>
-                                                <button class="btn btn-outline-secondary" @onclick="CancelEditQuestion">Cancel</button>
-                                            </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                            else
-                            {
-                                <tr>
-                                    <td>@index</td>
-                                    <td>@q.Prompt</td>
-                                    <td>@q.MaxPoints</td>
-                                    <td>
-                                        <div class="btn-group w-100">
-                                            <button class="btn btn-sm btn-outline-primary" @onclick="() => EditQuestion(q)">Edit</button>
-                                            <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDeleteQuestion(q)">Delete</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            }
-                        }
-
-                        @if (AddingQuestion)
-                        {
-                            <tr class="table-warning">
-                                <td></td>
+                            <tr class="table-info">
+                                <td>@index</td>
                                 <td colspan="3">
                                     <div class="mb-2">
                                         <label class="form-label fw-semibold small">Question Prompt</label>
                                         <textarea class="form-control" rows="2"
-                                                  placeholder="Enter the question prompt"
-                                                  @bind="NewQuestionPrompt"></textarea>
+                                                    @bind="EditPrompt"></textarea>
                                     </div>
 
                                     <div class="mb-2">
                                         <label class="form-label fw-semibold small">Expected Answer</label>
                                         <textarea class="form-control" rows="2"
-                                                  placeholder="Ideal or model answer for AI comparison"
-                                                  @bind="NewQuestionExpectedAnswer"></textarea>
+                                                    @bind="EditExpectedAnswer"></textarea>
                                     </div>
 
                                     <div class="mb-2">
                                         <label class="form-label fw-semibold small">Rubric</label>
                                         <textarea class="form-control" rows="2"
-                                                  placeholder="Describe how to award partial credit"
-                                                  @bind="NewQuestionRubric"></textarea>
+                                                    @bind="EditRubric"></textarea>
                                     </div>
 
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="flex-grow-1">
                                             <label class="form-label fw-semibold small mb-0">Points</label>
-                                            <input type="number" class="form-control" min="1" @bind="NewQuestionPoints" />
+                                            <input type="number" class="form-control" min="1" @bind="EditPoints" />
                                         </div>
                                         <div class="flex-grow-1 text-end mt-4">
-                                            <button class="btn btn-success me-2" @onclick="SaveNewQuestion">Add</button>
-                                            <button class="btn btn-outline-secondary" @onclick="CancelNewQuestion">Cancel</button>
+                                            <button class="btn btn-success me-2" @onclick="SaveEditedQuestion">Save</button>
+                                            <button class="btn btn-outline-secondary" @onclick="CancelEditQuestion">Cancel</button>
                                         </div>
                                     </div>
                                 </td>
                             </tr>
                         }
+                        else
+                        {
+                            <tr>
+                                <td>@index</td>
+                                <td>@q.Prompt</td>
+                                <td>@q.MaxPoints</td>
+                                <td>
+                                    <div class="btn-group w-100">
+                                        <button class="btn btn-sm btn-outline-primary" @onclick="() => EditQuestion(q)">Edit</button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => ConfirmDeleteQuestion(q)">Delete</button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
 
-                    </tbody>
-                </table>
+                    @if (AddingQuestion)
+                    {
+                        <tr class="table-warning">
+                            <td></td>
+                            <td colspan="3">
+                                <div class="mb-2">
+                                    <label class="form-label fw-semibold small">Question Prompt</label>
+                                    <textarea class="form-control" rows="2"
+                                                placeholder="Enter the question prompt"
+                                                @bind="NewQuestionPrompt"></textarea>
+                                </div>
 
-                @if (!AddingQuestion)
-                {
-                    <button class="btn btn-outline-success" @onclick="StartAddQuestion">
-                        + Add Question
-                    </button>
-                }
+                                <div class="mb-2">
+                                    <label class="form-label fw-semibold small">Expected Answer</label>
+                                    <textarea class="form-control" rows="2"
+                                                placeholder="Ideal or model answer for AI comparison"
+                                                @bind="NewQuestionExpectedAnswer"></textarea>
+                                </div>
 
-            </div>
-        }
-        else if (ActiveTab == "Access Codes")
-        {
-            <AccessCodesSection TestId=@TestId />
-        }
-        else if (ActiveTab == "Submissions")
-        {
-            <SubmissionsSection TestId=@TestId />
-        }
+                                <div class="mb-2">
+                                    <label class="form-label fw-semibold small">Rubric</label>
+                                    <textarea class="form-control" rows="2"
+                                                placeholder="Describe how to award partial credit"
+                                                @bind="NewQuestionRubric"></textarea>
+                                </div>
+
+                                <div class="d-flex align-items-center gap-2">
+                                    <div class="flex-grow-1">
+                                        <label class="form-label fw-semibold small mb-0">Points</label>
+                                        <input type="number" class="form-control" min="1" @bind="NewQuestionPoints" />
+                                    </div>
+                                    <div class="flex-grow-1 text-end mt-4">
+                                        <button class="btn btn-success me-2" @onclick="SaveNewQuestion">Add</button>
+                                        <button class="btn btn-outline-secondary" @onclick="CancelNewQuestion">Cancel</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+
+                </tbody>
+            </table>
+
+            @if (!AddingQuestion)
+            {
+                <button class="btn btn-outline-success" @onclick="StartAddQuestion">
+                    + Add Question
+                </button>
+            }
+
+        </div>
     }
 </div>
 

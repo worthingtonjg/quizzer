@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Components;
+using quizzer.Data.Entities;
 using quizzer.Services;
 using System.Text.Json;
 
-namespace quizzer.Pages.Teacher
+namespace quizzer.Components.Pages.Teacher
 {
-    public class SubmissionsSection : ComponentBase
+    public partial class TestSubmissions : ComponentBase
     {
         [Parameter] public string TestId { get; set; } = string.Empty;
 
@@ -15,6 +16,7 @@ namespace quizzer.Pages.Teacher
         [Inject] protected NavigationManager Nav { get; set; } = default!;
 
         protected bool IsLoading { get; set; } = true;
+        protected TestEntity Test { get; set; }
         protected List<SubmissionView> Submissions { get; set; } = new();
 
         protected override async Task OnInitializedAsync()
@@ -28,7 +30,7 @@ namespace quizzer.Pages.Teacher
         {
             var subs = new List<SubmissionView>();
 
-            var test = await TestService.GetByTestIdAsync(testId);
+            Test = await TestService.GetByTestIdAsync(testId);
             var submissionEntities = await SubmissionService.GetByTestAsync(testId);
             var accessCodes = await AccessCodeService.GetByTestAsync(testId);
             var questions = await QuestionService.GetByTestAsync(testId);
@@ -60,7 +62,7 @@ namespace quizzer.Pages.Teacher
                     StartedDate = submission?.Timestamp?.UtcDateTime,
                     SubmittedDate = submission?.SubmittedDate,
                     Score = submission?.Score,
-                    MaxScore = test?.TotalPoints,
+                    MaxScore = Test?.TotalPoints,
                     QuestionsAnswered = answeredCount,
                     TotalQuestions = totalQuestions
                 });
@@ -86,5 +88,7 @@ namespace quizzer.Pages.Teacher
             public int QuestionsAnswered { get; set; }
             public int TotalQuestions { get; set; }
         }
+
+        protected void GoBack() => Nav.NavigateTo("/teacher/dashboard");
     }
 }

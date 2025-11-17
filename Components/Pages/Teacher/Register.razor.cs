@@ -2,7 +2,7 @@
 using quizzer.Services;
 using System.ComponentModel.DataAnnotations;
 
-namespace quizzer.Pages.Teacher
+namespace quizzer.Components.Pages.Teacher
 {
     public partial class Register : ComponentBase
     {

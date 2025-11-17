@@ -13,7 +13,7 @@
 }
 else
 {
-<div class="container py-5">
+<div class="container">
     <div class="text-center mb-5">
         <h1 class="fw-bold mb-3">Welcome to Quizzer</h1>
         <p class="lead text-muted">
@@ -57,7 +57,7 @@ else
                                class="form-control text-uppercase"
                                placeholder="Enter Access Code"
                                maxlength="8" />
-                        <button class="btn btn-success" @onclick="StartTest">Start</button>
+                        <button class="btn btn-success" @onclick="LoadStudentDashboard">Start</button>
                     </div>
 
                     @if (!string.IsNullOrEmpty(ErrorMessage))

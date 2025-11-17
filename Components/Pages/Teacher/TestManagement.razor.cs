@@ -2,7 +2,7 @@
 using quizzer.Data.Entities;
 using quizzer.Services;
 
-namespace quizzer.Pages.Teacher
+namespace quizzer.Components.Pages.Teacher
 {
     public partial class TestManagement : ComponentBase
     {
@@ -19,8 +19,6 @@ namespace quizzer.Pages.Teacher
         protected bool IsLoading { get; set; } = true;
         protected string TeacherId { get; set; }
         protected string TeacherEmail { get; set; }
-        protected readonly string[] Tabs = new[] { "Edit", "Access Codes", "Submissions" };
-        protected string ActiveTab { get; set; } = "Edit";
         protected bool ShowDeleteModal { get; set; } = false;
         protected void ShowDeleteConfirm() => ShowDeleteModal = true;
         protected void HideDeleteConfirm() => ShowDeleteModal = false;
@@ -53,7 +51,7 @@ namespace quizzer.Pages.Teacher
             TeacherId = teacher.RowKey;
             TeacherEmail = teacher.Email;
 
-            Test = await TestService.GetByIdAsync(TeacherId, TestId);
+            Test = await TestService.GetByTestIdAsync(TestId);
             Questions = await QuestionService.GetByTestAsync(TestId);
             IsLoading = false;
         }
@@ -216,8 +214,6 @@ namespace quizzer.Pages.Teacher
             ShowDeleteModal = false;
             Nav.NavigateTo("/teacher/dashboard", forceLoad: true);
         }
-
-        protected void SwitchTab(string tab) => ActiveTab = tab;
 
         protected async Task PublishTest()
         {

@@ -1,0 +1,233 @@
+﻿@if (IsLoading)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    return;
+}
+
+<!-- Select Course -->
+<div class="mb-4">
+    <label class="form-label fw-bold">Select Course</label>
+    <select class="form-select"
+            @bind="SelectedCourseId"
+            @bind:after="OnCourseChanged">
+
+        @foreach (var course in Courses)
+        {
+            <option value="@course.RowKey">@course.CourseName</option>
+        }
+    </select>
+</div>
+
+<div class="row">
+    <!-- LEFT COLUMN: Period List -->
+    <div class="col-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <strong>Class Periods</strong>
+            </div>
+
+            <div class="card-body p-0">
+                <!-- Period Table -->
+                <table class="table table-hover mb-0">
+                    <tbody>
+
+                        @foreach (var p in Periods)
+                        {
+                            var isSelected = (p.RowKey == SelectedPeriodId);
+
+                            <tr class="@((isSelected ? "table-primary" : ""))"
+                                style="cursor:pointer"
+                                @onclick="() => SelectPeriod(p.RowKey)">
+
+                                <td>@p.PeriodName</td>
+
+                                <td class="text-end">
+
+                                    <button class="btn btn-outline-danger btn-sm"
+                                            @onclick="(MouseEventArgs e) => DeletePeriod(p)"
+                                            disabled="@(StudentsByPeriod[p.RowKey].Count > 0)"
+                                            @onclick:stopPropagation="true">
+
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+
+                                </td>
+                            </tr>
+                        }
+
+                    </tbody>
+                </table>
+                <!-- Add Period -->
+                <div class="p-3 border-bottom">
+                    <div class="input-group">
+                        <input class="form-control"
+                               placeholder="New period name..."
+                               @bind="NewPeriodName" />
+
+                        <button class="btn btn-primary" @onclick="AddPeriod">
+                            Add
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT COLUMN: Selected Period Details -->
+    <div class="col-8">
+        @if (!string.IsNullOrWhiteSpace(SelectedPeriodId))
+        {
+            var period = Periods.FirstOrDefault(p => p.RowKey == SelectedPeriodId);
+
+            if (period is not null)
+            {
+                <div class="card shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <strong>@period.PeriodName</strong>
+
+                        <div>
+                            <span class="badge bg-primary px-3 py-2 fs-6">
+                                Student Count: @StudentsByPeriod[period.RowKey].Count
+                            </span>
+                        </div>
+
+                    </div>
+                    <div class="card-body">
+                        @if (IsGenerating)
+                        {
+                            <div class="text-center mb-2">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="d-flex flex-wrap gap-2 mb-3">
+
+                                <div style="min-width: 140px;">
+                                    <input type="number"
+                                           min="1"
+                                           max="50"
+                                           class="form-control"
+                                           placeholder="# to generate"
+                                           @bind="StudentsToGenerate" />
+                                </div>
+
+                                <div class="d-flex flex-wrap gap-2 flex-grow-1">
+                                    <button class="btn btn-success"
+                                            @onclick="() => GenerateStudents(period.RowKey)">
+                                        <i class="bi bi-plus"></i> Generate
+                                    </button>
+
+                                    <button class="btn btn-primary"
+                                            @onclick="CopyAllLinks">
+                                        <i class="bi bi-clipboard-check"></i> Copy All
+                                    </button>
+
+                                    <button class="btn btn-danger"
+                                            @onclick="ShowDeleteAllConfirm">
+                                        🗑️ Delete All
+                                    </button>
+                                </div>
+
+                            </div>
+
+                            <div style="max-height: 200px; overflow-y: auto;">
+                                <ul class="list-group">
+                                    @foreach (var student in StudentsByPeriod[period.RowKey])
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+
+                                            <!-- LEFT: Link -->
+                                            <a href="@BuildLink(student.RowKey)"
+                                               target="_blank"
+                                               class="text-truncate">
+                                                <small>@BuildLink(student.RowKey)</small>
+                                            </a>
+
+                                            <!-- RIGHT: Action Buttons -->
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-outline-danger btn-sm"
+                                                        title="Delete student"
+                                                        @onclick="(() => ConfirmDeleteStudent(period.RowKey, student.RowKey))">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+
+                                                <button class="btn btn-outline-secondary btn-sm"
+                                                        title="Copy link"
+                                                        @onclick="(() => CopyLink(BuildLink(student.RowKey)))">
+                                                    <i class="bi bi-clipboard"></i>
+                                                </button>
+                                            </div>
+
+                                        </li>
+                                    }
+                                </ul>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-muted">Select a period to view details.</div>
+        }
+    </div>
+</div>
+@if (ShowDeleteAllModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">Delete All Students</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="HideDeleteAllConfirm"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete <strong>all students</strong> for this period?</p>
+                    <p class="text-muted mb-0">This cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideDeleteAllConfirm">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteAllStudents">Delete All</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@if (ShowDeleteStudentModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0,0,0,0.5);">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content shadow">
+
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold">Delete Student</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="HideDeleteStudentConfirm"></button>
+                </div>
+
+                <div class="modal-body">
+                    <p>
+                        Are you sure you want to delete this student?
+                    </p>
+                    <p class="text-muted mb-0">
+                        Access Code: <strong>@StudentToDeleteAccessCode</strong>
+                    </p>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="HideDeleteStudentConfirm">Cancel</button>
+                    <button class="btn btn-danger" @onclick="DeleteStudentConfirmed">Delete</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+}
