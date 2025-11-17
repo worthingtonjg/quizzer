@@ -2,16 +2,16 @@
 
 <PageTitle>Test Submissions</PageTitle>
 
-<div class="container">
+<div class="container pt-3">
+
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="fw-bold mb-0">@Test?.Title</h2>
-            <div class="mt-1">
-               
-            </div>
+            <h2 class="fw-bold">@Test?.Title</h2>
+            <div class="text-muted">@TestId</div>
         </div>
+
         <button class="btn btn-outline-secondary" @onclick="GoBack">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
+            <i class="bi bi-arrow-left"></i> Back
         </button>
     </div>
 
@@ -21,89 +21,124 @@
             <div class="spinner-border text-primary" role="status"></div>
         </div>
     }
-    else if (Submissions.Count == 0)
-    {
-        <div class="alert alert-light text-center">No submissions yet.</div>
-    }
     else
     {
-        <table class="table table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Student</th>
-                    <th>Status</th>
-                    <th>Progress</th>
-                    <th>Started</th>
-                    <th>Submitted</th>
-                    <th>Score</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var s in Submissions)
+    <div class="row">
+        <!-- LEFT COLUMN — PERIODS -->
+        <div class="col-3">
+            <div class="list-group">
+
+                @foreach (var p in Periods)
                 {
-                    <tr>
-                        <td>@s.AccessCode</td>
-
-                        <td>
-                            @if (s.Submitted)
-                            {
-                                <span class="badge bg-success">Submitted</span>
-                            }
-                            else if (s.Started)
-                            {
-                                <span class="badge bg-warning text-dark">In Progress</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">Not Started</span>
-                            }
-                        </td>
-
-                        <td>
-                            @if (s.TotalQuestions > 0)
-                            {
-                                <div class="d-flex align-items-center gap-2">
-                                    <div style="min-width: 60px;">@s.QuestionsAnswered / @s.TotalQuestions</div>
-                                    <div class="progress flex-grow-1" style="height: 6px;">
-                                        <div class="progress-bar @(s.Submitted ? "bg-success" : s.QuestionsAnswered > 0 ? "bg-info" : "bg-secondary")"
-                                             role="progressbar"
-                                             style="width:@((double)s.QuestionsAnswered / s.TotalQuestions * 100)%;">
-                                        </div>
-                                    </div>
-                                </div>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </td>
-
-                        <td>@(s.StartedDate?.ToLocalTime().ToString("g") ?? "-")</td>
-                        <td>@(s.SubmittedDate?.ToLocalTime().ToString("g") ?? "-")</td>
-
-                        <td>
-                            @if (s.Score != null && s.MaxScore != null)
-                            {
-                                <span>@($"{s.Score}/{s.MaxScore}")</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </td>
-
-                        <td class="text-end">
-                            @if (s.Submitted)
-                            {
-                                <button class="btn btn-outline-primary btn-sm" @onclick="() => ViewSubmission(s.AccessCode)">
-                                    View
-                                </button>
-                            }
-                        </td>
-                    </tr>
+                    <button class="list-group-item list-group-item-action @(SelectedPeriodId == p.RowKey ? "active" : "")"
+                            @onclick="() => SelectPeriod(p.RowKey)">
+                        @p.PeriodName
+                    </button>
                 }
-            </tbody>
-        </table>
+
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN — SUBMISSIONS -->
+        <div class="col-9">
+
+            @if (SelectedPeriodId == null)
+            {
+                <div class="alert alert-info">Select a period to see submissions.</div>
+            }
+            else if (Submissions.Count == 0)
+            {
+                <div class="alert alert-light text-center">No submissions yet.</div>
+            }
+            else
+            {
+                <table class="table table-hover align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Student</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Started</th>
+                            <th>Submitted</th>
+                            <th>Score</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var s in Submissions)
+                        {
+                            <tr>
+
+                                <td>@s.AccessCode</td>
+
+                                <td>
+                                    @if (s.Submitted)
+                                    {
+                                        <span class="badge bg-success">Submitted</span>
+                                    }
+                                    else if (s.Started)
+                                    {
+                                        <span class="badge bg-warning text-dark">In Progress</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">Not Started</span>
+                                    }
+                                </td>
+
+                                <td>
+                                    @if (s.TotalQuestions > 0)
+                                    {
+                                        var width = (double)s.QuestionsAnswered / s.TotalQuestions * 100;
+
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div>@s.QuestionsAnswered / @s.TotalQuestions</div>
+
+                                            <div class="progress flex-grow-1" style="height: 6px;">
+                                                <div class="progress-bar @(s.Submitted ? "bg-success" 
+                                                                                     : s.QuestionsAnswered > 0 ? "bg-info" : "bg-secondary")"
+                                                     role="progressbar"
+                                                     style=@("width:" + width + "%")>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+
+                                <td>@(s.StartedDate?.ToLocalTime().ToString("g") ?? "-")</td>
+                                <td>@(s.SubmittedDate?.ToLocalTime().ToString("g") ?? "-")</td>
+
+                                <td>
+                                    @if (s.Score != null)
+                                    {
+                                        <span>@s.Score / @s.MaxScore</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">—</span>
+                                    }
+                                </td>
+
+                                <td class="text-end">
+                                    @if (s.Submitted)
+                                    {
+                                        <button class="btn btn-outline-primary btn-sm"
+                                                @onclick="() => ViewSubmission(s.AccessCode)">
+                                            View
+                                        </button>
+                                    }
+                                </td>
+
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
     }
 </div>

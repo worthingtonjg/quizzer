@@ -7,9 +7,10 @@ namespace quizzer.Pages.Student
 {
     public partial class TakeTest : ComponentBase
     {
-        [Parameter] public string AccessCodeId { get; set; } = string.Empty;
+        [Parameter] public string StudentId { get; set; } = string.Empty;
+        [Parameter] public string TestId { get; set; } = string.Empty;
 
-        [Inject] protected AccessCodeService AccessCodeService { get; set; } = default!;
+        [Inject] protected StudentService StudentService { get; set; } = default!;
         [Inject] protected TestService TestService { get; set; } = default!;
         [Inject] protected QuestionService QuestionService { get; set; } = default!;
         [Inject] protected SubmissionService SubmissionService { get; set; } = default!;
@@ -41,14 +42,14 @@ namespace quizzer.Pages.Student
         {
             try
             {
-                var accessCode = await AccessCodeService.GetByIdAsync(AccessCodeId);
-                if (accessCode == null)
+                var student = await StudentService.GetByAccessCodeAsync(StudentId);
+                if (student == null)
                 {
                     ErrorMessage = "Invalid or expired access link.";
                     return;
                 }
 
-                Test = await TestService.GetByIdAsync(accessCode.TeacherId, accessCode.PartitionKey);
+                Test = await TestService.GetByTestIdAsync(TestId);
                 if (Test == null)
                 {
                     ErrorMessage = "This test no longer exists.";
@@ -67,11 +68,11 @@ namespace quizzer.Pages.Student
                     return;
                 }
 
-                Questions = await QuestionService.GetByTestAsync(Test.RowKey);
+                Questions = await QuestionService.GetByTestAsync(TestId);
                 Responses = Questions.ToDictionary(q => q.RowKey, q => string.Empty);
 
                 // 🟩 Load existing submission
-                Submission = await SubmissionService.GetByIdAsync(Test.RowKey, AccessCodeId);
+                Submission = await SubmissionService.GetByIdAsync(TestId, StudentId);
                 if (Submission != null)
                 {
                     IsSubmitted = Submission.SubmittedDate != null;  // 🟩 key change
@@ -117,7 +118,7 @@ namespace quizzer.Pages.Student
 
             try
             {
-                await SubmissionService.UpsertAnswerAsync(Test.RowKey, AccessCodeId, questionId, answer);
+                await SubmissionService.UpsertAnswerAsync(TestId, StudentId, questionId, answer);
             }
             catch (Exception ex)
             {
@@ -136,14 +137,14 @@ namespace quizzer.Pages.Student
                 var allAnswersJson = JsonSerializer.Serialize(Responses);
 
                 // Upsert full answer set in one shot
-                await SubmissionService.SaveAllAnswersAsync(Test.RowKey, AccessCodeId, allAnswersJson);
+                await SubmissionService.SaveAllAnswersAsync(TestId, StudentId, allAnswersJson);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Final save failed before submission: {ex.Message}");
             }
 
-            await SubmissionService.MarkSubmittedAsync(Test.RowKey, AccessCodeId);
+            await SubmissionService.MarkSubmittedAsync(TestId, StudentId);
 
             await Load();
         }

@@ -10,7 +10,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-builder.Services.AddSingleton<AccessCodeService>();
 builder.Services.AddSingleton<ClassPeriodService>();
 builder.Services.AddSingleton<CourseService>();
 builder.Services.AddScoped<CurrentUserService>();

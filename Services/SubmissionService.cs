@@ -31,6 +31,19 @@ namespace quizzer.Services
             }
         }
 
+        public async Task<List<SubmissionEntity>> GetSubmissionsForStudentAsync(string studentAccessCode)
+        {
+            var results = new List<SubmissionEntity>();
+
+            // Query all submissions in this partition
+            var query = _table.QueryAsync<SubmissionEntity>(x => x.RowKey == studentAccessCode);
+
+            await foreach (var entity in query)
+                results.Add(entity);
+
+            return results;
+        }
+
         public async Task UpsertAnswerAsync(string testId, string accessCodeId, string questionId, string answer)
         {
             // Get existing submission

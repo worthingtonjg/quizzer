@@ -1,0 +1,109 @@
+﻿@page "/student/{StudentAccessCode}/dashboard"
+
+@if (IsLoading)
+{
+    <div class="text-center mt-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    return;
+}
+
+<h3 class="mb-4">Your Tests</h3>
+
+<!-- ========================= -->
+<!--     NEEDS COMPLETION      -->
+<!-- ========================= -->
+@if (NeedsCompletion.Any())
+{
+    <h5 class="mt-3">Needs to Be Completed</h5>
+    <div class="list-group mb-4">
+        @foreach (var test in NeedsCompletion)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@test.Title</strong>
+
+                    @if (!string.IsNullOrWhiteSpace(test.Description))
+                    {
+                        <span class="text-muted d-block">@test.Description</span>
+                    }
+                </div>
+
+                <button class="btn btn-primary"
+                        @onclick="() => GoToTest(test.TestId)">
+                    Take Test
+                </button>
+            </div>
+        }
+    </div>
+}
+
+<!-- ========================= -->
+<!--    SUBMITTED (UNGRADED)   -->
+<!-- ========================= -->
+@if (Submitted.Any())
+{
+    <h5 class="mt-3">Submitted (Waiting for Grade)</h5>
+    <div class="list-group mb-4">
+        @foreach (var test in Submitted)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@test.Title</strong>
+
+                    <div class="mt-1">
+                        <span class="badge bg-secondary me-2">Submitted</span>
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(test.Description))
+                    {
+                        <span class="text-muted d-block">@test.Description</span>
+                    }
+                </div>
+
+                <button class="btn btn-outline-primary"
+                        @onclick="() => GoToTest(test.TestId)">
+                    View Submission
+                </button>
+            </div>
+        }
+    </div>
+}
+
+<!-- ========================= -->
+<!--          GRADED           -->
+<!-- ========================= -->
+@if (Graded.Any())
+{
+    <h5 class="mt-3">Graded</h5>
+    <div class="list-group mb-4">
+        @foreach (var test in Graded)
+        {
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>@test.Title</strong>
+
+                    <div class="mt-1">
+                        <span class="badge bg-success me-2">Graded</span>
+                        @if (test.Score is not null)
+                        {
+                            <span>Score: @test.Score</span>
+                        }
+                    </div>
+
+                    @if (!string.IsNullOrWhiteSpace(test.Description))
+                    {
+                        <span class="text-muted d-block">@test.Description</span>
+                    }
+                </div>
+
+                <button class="btn btn-outline-primary"
+                        @onclick="() => GoToTest(test.TestId)">
+                    View Results
+                </button>
+            </div>
+        }
+    </div>
+}

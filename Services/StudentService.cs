@@ -1,6 +1,7 @@
 ﻿using Azure;
 using Azure.Data.Tables;
 using quizzer.Data.Entities;
+using System.Collections.Concurrent;
 
 namespace quizzer.Services
 {
@@ -21,7 +22,7 @@ namespace quizzer.Services
         /// Creates a new student identity for a class period.
         /// StudentAccessCode = random unique code.
         /// </summary>
-        public async Task<StudentEntity> CreateAsync(string classPeriodId, string teacherId)
+        public async Task<StudentEntity> CreateAsync(string classPeriodId, string teacherId, string periodId, string courseId)
         {
             var accessCode = AccessCodeGenerator.Generate();
 
@@ -29,7 +30,9 @@ namespace quizzer.Services
             {
                 PartitionKey = classPeriodId,
                 RowKey = accessCode,
-                TeacherId = teacherId
+                TeacherId = teacherId,
+                PeriodId = periodId,
+                CourseId = courseId
             };
 
             await _table.AddEntityAsync(entity);
@@ -65,6 +68,15 @@ namespace quizzer.Services
             }
         }
 
+        public async Task<StudentEntity?> GetByAccessCodeAsync(string accessCode)
+        {
+            var query = _table.QueryAsync<StudentEntity>(s => s.RowKey == accessCode);
+
+            await foreach (var item in query)
+                return item;
+
+            return null;
+        }
 
         /// <summary>
         /// Gets a student by ClassPeriod + AccessCode.

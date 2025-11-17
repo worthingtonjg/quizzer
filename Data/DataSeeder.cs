@@ -141,7 +141,7 @@ public static class DataSeeder
 
             for (int i = 0; i < 5; i++)
             {
-                var student = await studentService.CreateAsync(period["ClassPeriodId"], teacherId);
+                var student = await studentService.CreateAsync(period["ClassPeriodId"], teacherId, period.RowKey, course.RowKey);
                 Console.WriteLine($"   → Student access code: {student["StudentAccessCode"]}");
             }
 

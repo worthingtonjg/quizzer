@@ -96,12 +96,6 @@ namespace quizzer.Components.Pages.Teacher
             await LoadPeriods();
         }
 
-        protected async Task AddStudent(string classPeriodId)
-        {
-            await StudentService.CreateAsync(classPeriodId, TeacherId);
-            await LoadPeriods();
-        }
-
         protected async Task DeletePeriod(ClassPeriodEntity period)
         {
             if (StudentsByPeriod.TryGetValue(period["ClassPeriodId"], out var students) &&
@@ -123,8 +117,15 @@ namespace quizzer.Components.Pages.Teacher
 
             IsGenerating = true;
 
+            var period = Periods.FirstOrDefault(p => p.RowKey == SelectedPeriodId);
+            var course = Courses.FirstOrDefault(c => c.RowKey == SelectedCourseId);
+            var periodName = period.PeriodName;
+            var courseName = course.CourseName;
+
             for (int i = 0; i < StudentsToGenerate; i++)
-                await StudentService.CreateAsync(classPeriodId, TeacherId);
+            {
+                await StudentService.CreateAsync(classPeriodId, TeacherId, period.RowKey, course.RowKey);
+            }
 
             // Reset to 1 for convenience
             StudentsToGenerate = 1;
@@ -135,7 +136,7 @@ namespace quizzer.Components.Pages.Teacher
         }
 
         protected string BuildLink(string accessCode)
-           => $"{Nav.BaseUri}student/{accessCode}";
+           => $"{Nav.BaseUri}student/{accessCode}/dashboard";
 
         protected async Task DeleteAllStudents()
         {

@@ -1,7 +1,7 @@
 ﻿namespace quizzer.Data.Entities
 {
     // This holds student submissions
-    [EntityKeys("StudentAccessCode", "TestId")]
+    [EntityKeys("TestId", "StudentAccessCode")]
     public class SubmissionEntity : BaseTableEntity
     {
         public string AnswersJson { get; set; } = string.Empty;
